@@ -37,6 +37,26 @@
             opacity: 0;
         }
 
+        .heart-rain {
+            position: fixed;
+            font-size: 25px;
+            animation: heartRain 4s linear;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1001;
+        }
+
+        @keyframes heartRain {
+            0% {
+                transform: translateY(-10vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(110vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
         .sparkle {
             position: fixed;
             font-size: 20px;
@@ -128,6 +148,7 @@
             justify-content: center;
             margin-top: 50px;
             padding-bottom: 20px;
+            position: relative;
         }
 
         button {
@@ -147,22 +168,40 @@
             position: relative;
             z-index: 10;
             transform-origin: center top;
+            cursor: pointer;
         }
 
         #btnSi:hover {
             transform: scale(1.1);
             box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><text y="24" font-size="24">💖</text></svg>'), auto;
         }
 
         #btnNo {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
             color: white;
+            position: relative;
         }
 
         #btnNo.moviendo {
             position: fixed;
             z-index: 1000;
             transition: all 0.3s ease;
+        }
+
+        #btnNo.detras {
+            z-index: 5 !important;
+        }
+
+        #btnNo.temblando {
+            animation: temblar 0.3s infinite;
+        }
+
+        @keyframes temblar {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(-5px) rotate(-5deg); }
+            50% { transform: translateX(5px) rotate(5deg); }
+            75% { transform: translateX(-5px) rotate(-5deg); }
         }
 
         .shake {
@@ -214,18 +253,6 @@
             }
         }
 
-        .contador {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-weight: bold;
-            color: #d946ef;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
         .confetti {
             position: fixed;
             width: 10px;
@@ -254,14 +281,31 @@
                 box-shadow: 0 0 10px #f5576c, 0 0 20px #f5576c, 0 0 30px #f5576c;
             }
         }
+
+        .explosion {
+            position: fixed;
+            font-size: 40px;
+            animation: explotar 1s ease-out;
+            pointer-events: none;
+            z-index: 1002;
+        }
+
+        @keyframes explotar {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(3) rotate(360deg);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="hearts" id="hearts"></div>
     
     <div class="container">
-        <div class="contador" id="contador">Intentos: 0</div>
-        
         <div id="contenidoPrincipal">
             <div class="emoji">💕</div>
             <h1>Mi Amor...</h1>
@@ -269,7 +313,7 @@
             
             <div class="buttons">
                 <button id="btnSi" onclick="perdonado()">Sí ❤️</button>
-                <button id="btnNo" onclick="moverBotonNo()">No</button>
+                <button id="btnNo" onclick="moverBotonNo()" onmouseover="asustarBotonNo()">No</button>
             </div>
         </div>
 
@@ -311,6 +355,26 @@
 
         setInterval(crearCorazon, 300);
 
+        // Lluvia de corazones intensa
+        function lluviaDeCorazones() {
+            for(let i = 0; i < 150; i++) {
+                setTimeout(() => {
+                    const heart = document.createElement('div');
+                    heart.className = 'heart-rain';
+                    const emojis = ['💗', '💕', '💖', '💝', '💘', '❤️', '💓', '💞', '💟'];
+                    heart.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
+                    heart.style.left = Math.random() * 100 + '%';
+                    heart.style.animationDuration = (Math.random() * 2 + 3) + 's';
+                    heart.style.fontSize = (Math.random() * 15 + 20) + 'px';
+                    document.body.appendChild(heart);
+                    
+                    setTimeout(() => {
+                        heart.remove();
+                    }, 4000);
+                }, i * 20);
+            }
+        }
+
         const frases = [
             "¿Estás segura? Por favor, perdóname 🥺",
             "Dale, una oportunidad más, te lo ruego 💕",
@@ -345,7 +409,7 @@
         ];
 
         function crearChispas(x, y) {
-            for(let i = 0; i < 5; i++) {
+            for(let i = 0; i < 8; i++) {
                 const sparkle = document.createElement('div');
                 sparkle.className = 'sparkle';
                 sparkle.innerHTML = '✨';
@@ -360,11 +424,34 @@
             }
         }
 
+        function crearExplosion(x, y) {
+            const explosion = document.createElement('div');
+            explosion.className = 'explosion';
+            explosion.innerHTML = '💥';
+            explosion.style.left = x + 'px';
+            explosion.style.top = y + 'px';
+            document.body.appendChild(explosion);
+            
+            setTimeout(() => {
+                explosion.remove();
+            }, 1000);
+        }
+
+        function asustarBotonNo() {
+            const btnNo = document.getElementById('btnNo');
+            if(!btnNo.classList.contains('moviendo')) return;
+            
+            // Hacer temblar el botón
+            btnNo.classList.add('temblando');
+            setTimeout(() => {
+                btnNo.classList.remove('temblando');
+            }, 300);
+        }
+
         function moverBotonNo() {
             const btnNo = document.getElementById('btnNo');
             
             intentos++;
-            document.getElementById('contador').textContent = `Intentos: ${intentos}`;
             
             // Cambiar frase
             const pregunta = document.getElementById('pregunta');
@@ -376,7 +463,7 @@
             
             // Hacer más grande el botón Sí
             const btnSi = document.getElementById('btnSi');
-            tamañoBotonSi += 0.1;
+            tamañoBotonSi += 0.15;
             btnSi.style.transform = `scale(${tamañoBotonSi})`;
             
             // Agregar brillo al botón Sí después de 3 intentos
@@ -388,8 +475,21 @@
             const rect = btnNo.getBoundingClientRect();
             crearChispas(rect.left + rect.width/2, rect.top + rect.height/2);
             
+            // Cada 3 intentos, crear explosión
+            if(intentos % 3 === 0) {
+                crearExplosion(rect.left + rect.width/2, rect.top + rect.height/2);
+            }
+            
             // Cambiar a posición fija para que se mueva por toda la pantalla
             btnNo.classList.add('moviendo');
+            
+            // A veces poner el botón No detrás del Sí (30% de probabilidad)
+            if(Math.random() < 0.3) {
+                btnNo.classList.add('detras');
+                setTimeout(() => {
+                    btnNo.classList.remove('detras');
+                }, 2000);
+            }
             
             // Calcular nueva posición aleatoria en toda la ventana
             const btnWidth = btnNo.offsetWidth;
@@ -404,9 +504,9 @@
             btnNo.style.left = randomX + 'px';
             btnNo.style.top = randomY + 'px';
             
-            // Cambiar el texto del botón No ocasionalmente
-            const textosNo = ['No', '¡No!', 'Nop', 'Nel', 'Nope', 'Nanai', '❌'];
-            if(Math.random() > 0.7) {
+            // Cambiar el texto del botón No con más variedad
+            const textosNo = ['No', '¡No!', 'Nop', 'Nel', 'Nope', 'Nanai', '❌', 'Nah', '🙅', 'Never'];
+            if(Math.random() > 0.6) {
                 btnNo.textContent = textosNo[Math.floor(Math.random() * textosNo.length)];
             }
         }
@@ -414,7 +514,7 @@
         function crearConfetti() {
             const colors = ['#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#feca57', '#ff6b6b', '#ee5a6f', '#a29bfe'];
             
-            for(let i = 0; i < 100; i++) {
+            for(let i = 0; i < 150; i++) {
                 setTimeout(() => {
                     const confetti = document.createElement('div');
                     confetti.className = 'confetti';
@@ -428,11 +528,14 @@
                     setTimeout(() => {
                         confetti.remove();
                     }, 3000);
-                }, i * 30);
+                }, i * 20);
             }
         }
 
         function perdonado() {
+            // ¡LLUVIA DE CORAZONES!
+            lluviaDeCorazones();
+            
             crearConfetti();
             
             document.getElementById('contenidoPrincipal').style.display = 'none';
@@ -440,8 +543,8 @@
             mensajeFinal.style.display = 'block';
             
             // Más corazones cuando perdona
-            for(let i = 0; i < 50; i++) {
-                setTimeout(crearCorazon, i * 50);
+            for(let i = 0; i < 80; i++) {
+                setTimeout(crearCorazon, i * 40);
             }
             
             // Cambiar el fondo
