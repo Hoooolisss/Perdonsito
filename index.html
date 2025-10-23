@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>¿Me Perdonas?</title>
     <style>
         * {
@@ -93,7 +93,7 @@
 
         .container {
             background: white;
-            padding: 50px;
+            padding: 40px 30px;
             border-radius: 30px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             text-align: center;
@@ -117,8 +117,8 @@
 
         h1 {
             color: #d946ef;
-            font-size: 2.5em;
-            margin-bottom: 20px;
+            font-size: 2em;
+            margin-bottom: 15px;
             animation: pulse 2s infinite;
         }
 
@@ -132,28 +132,29 @@
         }
 
         .question {
-            font-size: 1.8em;
+            font-size: 1.5em;
             color: #333;
-            margin: 30px 0;
+            margin: 20px 0;
             font-weight: bold;
-            min-height: 60px;
+            min-height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 0 10px;
         }
 
         .buttons {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             justify-content: center;
-            margin-top: 50px;
+            margin-top: 40px;
             padding-bottom: 20px;
             position: relative;
         }
 
         button {
-            padding: 15px 40px;
-            font-size: 1.2em;
+            padding: 12px 35px;
+            font-size: 1.1em;
             border: none;
             border-radius: 50px;
             cursor: pointer;
@@ -168,13 +169,10 @@
             position: relative;
             z-index: 10;
             transform-origin: center top;
-            cursor: pointer;
         }
 
         #btnSi:hover {
-            transform: scale(1.1);
             box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
-            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><text y="24" font-size="24">💖</text></svg>'), auto;
         }
 
         #btnNo {
@@ -204,16 +202,6 @@
             75% { transform: translateX(-5px) rotate(-5deg); }
         }
 
-        .shake {
-            animation: shake 0.5s;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
-            20%, 40%, 60%, 80% { transform: translateX(10px); }
-        }
-
         .mensaje {
             display: none;
             animation: fadeIn 1s ease-in;
@@ -231,15 +219,15 @@
         }
 
         .mensaje-final {
-            font-size: 1.5em;
+            font-size: 1.3em;
             color: #d946ef;
             line-height: 1.6;
             margin-top: 20px;
         }
 
         .emoji {
-            font-size: 3em;
-            margin: 20px 0;
+            font-size: 2.5em;
+            margin: 15px 0;
             display: inline-block;
             animation: bounce 1s infinite;
         }
@@ -300,6 +288,39 @@
                 opacity: 0;
             }
         }
+
+        /* Optimización para móviles */
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .question {
+                font-size: 1.3em;
+                min-height: 45px;
+            }
+
+            button {
+                padding: 12px 30px;
+                font-size: 1em;
+            }
+
+            .emoji {
+                font-size: 2em;
+            }
+
+            .mensaje-final {
+                font-size: 1.1em;
+            }
+
+            .heart {
+                font-size: 20px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -313,7 +334,7 @@
             
             <div class="buttons">
                 <button id="btnSi" onclick="perdonado()">Sí ❤️</button>
-                <button id="btnNo" onclick="moverBotonNo()" onmouseover="asustarBotonNo()">No</button>
+                <button id="btnNo" onclick="moverBotonNo()" ontouchstart="asustarBotonNo()">No</button>
             </div>
         </div>
 
@@ -461,9 +482,13 @@
                 pregunta.textContent = frases[intentos % frases.length];
             }, 10);
             
-            // Hacer más grande el botón Sí
+            // Hacer más grande el botón Sí (pero controlado en móvil)
             const btnSi = document.getElementById('btnSi');
-            tamañoBotonSi += 0.15;
+            const isMobile = window.innerWidth <= 768;
+            const incremento = isMobile ? 0.08 : 0.15;
+            const maxSize = isMobile ? 1.8 : 2.5;
+            
+            tamañoBotonSi = Math.min(tamañoBotonSi + incremento, maxSize);
             btnSi.style.transform = `scale(${tamañoBotonSi})`;
             
             // Agregar brillo al botón Sí después de 3 intentos
@@ -483,29 +508,32 @@
             // Cambiar a posición fija para que se mueva por toda la pantalla
             btnNo.classList.add('moviendo');
             
-            // A veces poner el botón No detrás del Sí (30% de probabilidad)
-            if(Math.random() < 0.3) {
+            // A veces poner el botón No detrás del Sí (25% de probabilidad en móvil)
+            if(Math.random() < 0.25) {
                 btnNo.classList.add('detras');
                 setTimeout(() => {
                     btnNo.classList.remove('detras');
                 }, 2000);
             }
             
-            // Calcular nueva posición aleatoria en toda la ventana
+            // Calcular nueva posición aleatoria
             const btnWidth = btnNo.offsetWidth;
             const btnHeight = btnNo.offsetHeight;
             
-            const maxX = window.innerWidth - btnWidth - 20;
-            const maxY = window.innerHeight - btnHeight - 20;
+            // En móvil, limitar el área donde puede aparecer el botón
+            // Solo permitir en la mitad inferior de la pantalla para no tapar el texto
+            const minY = window.innerHeight * 0.5; // Mitad inferior de la pantalla
+            const maxX = window.innerWidth - btnWidth - 10;
+            const maxY = window.innerHeight - btnHeight - 10;
             
             const randomX = Math.random() * maxX;
-            const randomY = Math.random() * maxY;
+            const randomY = minY + Math.random() * (maxY - minY);
             
             btnNo.style.left = randomX + 'px';
             btnNo.style.top = randomY + 'px';
             
             // Cambiar el texto del botón No con más variedad
-            const textosNo = ['No', '¡No!', 'Nop', 'Nel', 'Nope', 'Nanai', '❌', 'Nah', '🙅', 'Never'];
+            const textosNo = ['No', '¡No!', 'Nop', 'Nel', 'Nope', 'Nanai', '❌', 'Nah', '🙅'];
             if(Math.random() > 0.6) {
                 btnNo.textContent = textosNo[Math.floor(Math.random() * textosNo.length)];
             }
